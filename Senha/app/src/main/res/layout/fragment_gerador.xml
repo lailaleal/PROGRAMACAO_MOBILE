@@ -1,14 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center">
+    android:padding="16dp">
 
-    <TextView
-        android:id="@+id/textGerador"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tela Gerador"
-        android:textSize="22sp" />
+        android:orientation="vertical">
 
-</FrameLayout>
+        <!-- CARD DA SENHA GERADA -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorOutline">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/textSenha"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sua senha aparecerá aqui"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:padding="16dp"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- TAMANHO DA SENHA -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tamanho da senha"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"/>
+
+        <SeekBar
+            android:id="@+id/seekBarTamanho"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="20"/>
+
+        <TextView
+            android:id="@+id/textTamanho"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tamanho: 10"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- OPÇÕES DA SENHA -->
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchMaiusculas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Incluir letras maiúsculas"
+            android:checked="true"/>
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchNumeros"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Incluir números"
+            android:checked="true"/>
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchSimbolos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Incluir símbolos"
+            android:checked="false"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- BOTÃO GERAR -->
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonGerar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Gerar Senha"
+            android:layout_marginBottom="10dp"/>
+
+        <!-- BOTÃO COPIAR -->
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonCopiar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Copiar Senha"
+            android:layout_marginTop="12dp"
+            app:icon="@drawable/baseline_content_copy_24"/>
+
+    </LinearLayout>
+
+</ScrollView>
