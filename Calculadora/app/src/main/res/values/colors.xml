@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fundo da Calculadora -->
+    <color name="calc_background">#121212</color>
+
+    <!-- Visor LCD -->
+    <color name="lcd_background">#A8B89E</color>
+    <color name="lcd_text_primary">#1A1A1A</color>
+    <color name="lcd_text_secondary">#667560</color>
+
+    <!-- Botões Numéricos (Prateados) -->
+    <color name="btn_numeric_bg">#D1D4D9</color>
+    <color name="btn_numeric_text">#1A1A1A</color>
+
+    <!-- Botões de Funções e Operadores (Cinza Escuro) -->
+    <color name="btn_function_bg">#333333</color>
+    <color name="btn_function_text">#FFFFFF</color>
+
+    <!-- Botões Laranja (DEL / AC) -->
+    <color name="btn_special_bg">#FF9500</color>
+    <color name="btn_special_text">#FFFFFF</color>
+
+    <!-- Botão de Igual (Azul) -->
+    <color name="btn_equals_bg">#2196F3</color>
+    <color name="btn_equals_text">#FFFFFF</color>
+
+    <!-- Compatibilidade -->
+    <color name="background">#121212</color>
+    <color name="display_background">#A8B89E</color>
+</resources>

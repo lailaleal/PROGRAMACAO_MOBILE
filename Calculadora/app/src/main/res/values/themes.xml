@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Tema base -->
+    <style name="Base.Theme.Calculadora" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- Cor da barra de status -->
+        <item name="android:statusBarColor">@color/background</item>
+
+        <!-- Cor da barra de navegação -->
+        <item name="android:navigationBarColor">@color/background</item>
+
+        <!-- Fundo do aplicativo -->
+        <item name="android:windowBackground">@color/background</item>
+
+    </style>
+
+    <!-- Tema principal do aplicativo -->
+    <style name="Theme.Calculadora" parent="Base.Theme.Calculadora" />
+
+</resources>

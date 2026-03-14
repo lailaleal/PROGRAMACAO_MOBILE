@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base para botões - Ocupando todo o espaço proporcionalmente -->
+    <style name="CalcButtonBase" parent="Widget.MaterialComponents.Button">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_rowWeight">1</item>
+        <item name="android:layout_margin">1dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">4dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:padding">0dp</item>
+    </style>
+
+    <!-- Funções Científicas e Operadores -->
+    <style name="calcFunction" parent="CalcButtonBase">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/btn_function_text</item>
+        <item name="backgroundTint">@color/btn_function_bg</item>
+    </style>
+
+    <!-- Botões Numéricos -->
+    <style name="calcNumber" parent="CalcButtonBase">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/btn_numeric_text</item>
+        <item name="backgroundTint">@color/btn_numeric_bg</item>
+    </style>
+
+    <!-- Botões Especiais (DEL / AC) -->
+    <style name="calcSpecial" parent="CalcButtonBase">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/btn_special_text</item>
+        <item name="backgroundTint">@color/btn_special_bg</item>
+    </style>
+
+    <!-- Botão de Igual (Azul) -->
+    <style name="calcEquals" parent="CalcButtonBase">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@color/btn_equals_text</item>
+        <item name="backgroundTint">@color/btn_equals_bg</item>
+    </style>
+
+    <!-- Compatibilidade -->
+    <style name="casioNumber" parent="calcNumber" />
+    <style name="casioOperator" parent="calcFunction" />
+    <style name="casioFunction" parent="calcFunction" />
+    <style name="casioClear" parent="calcSpecial" />
+    <style name="casioEquals" parent="calcEquals" />
+
+</resources>
