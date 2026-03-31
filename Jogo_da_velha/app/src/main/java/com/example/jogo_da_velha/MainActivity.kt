@@ -26,6 +26,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvScoreX: TextView
     private lateinit var tvScoreO: TextView
     private lateinit var tvScoreDraw: TextView
+    private lateinit var tvLabelPlayerX: TextView
+    private lateinit var tvLabelPlayerO: TextView
+
+    private var namePlayerX = "Jogador X"
+    private var namePlayerO = "Jogador O"
+    private var initialStartingPlayer = 1
 
     private var scoreX = 0
     private var scoreO = 0
@@ -38,6 +44,12 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        // Receber dados da SetupActivity
+        namePlayerX = intent.getStringExtra("PLAYER_1_NAME") ?: "Jogador X"
+        namePlayerO = intent.getStringExtra("PLAYER_2_NAME") ?: "Jogador O"
+        initialStartingPlayer = intent.getIntExtra("STARTING_PLAYER", 1)
+        activePlayer = initialStartingPlayer
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -48,9 +60,15 @@ class MainActivity : AppCompatActivity() {
         tvScoreX = findViewById(R.id.tvScoreX)
         tvScoreO = findViewById(R.id.tvScoreO)
         tvScoreDraw = findViewById(R.id.tvScoreDraw)
+        tvLabelPlayerX = findViewById(R.id.tvLabelPlayerX)
+        tvLabelPlayerO = findViewById(R.id.tvLabelPlayerO)
 
-        // Inicializar placar com 0
+        // Configurar labels com os nomes recebidos
+        tvLabelPlayerX.text = namePlayerX.uppercase()
+        tvLabelPlayerO.text = namePlayerO.uppercase()
+
         updateScoreBoard()
+        updateTurnDisplay()
 
         for (i in 0..8) {
             val resID = resources.getIdentifier("btn$i", "id", packageName)
@@ -74,17 +92,22 @@ class MainActivity : AppCompatActivity() {
 
         if (activePlayer == 1) {
             button.text = "X"
-            button.setTextColor(Color.parseColor("#D4AF37")) // Dourado do layout
-            tvStatus.text = "Vez do Jogador O"
+            button.setTextColor(Color.parseColor("#D4AF37"))
             activePlayer = 2
         } else {
             button.text = "O"
             button.setTextColor(Color.WHITE)
-            tvStatus.text = "Vez do Jogador X"
             activePlayer = 1
         }
 
+        updateTurnDisplay()
         checkWinner()
+    }
+
+    private fun updateTurnDisplay() {
+        if (isGameActive) {
+            tvStatus.text = "Vez de " + if (activePlayer == 1) namePlayerX else namePlayerO
+        }
     }
 
     private fun checkWinner() {
@@ -95,13 +118,12 @@ class MainActivity : AppCompatActivity() {
             ) {
 
                 isGameActive = false
-                val winner = if (gameState[pos[0]] == 1) "Jogador X" else "Jogador O"
-                tvStatus.text = "$winner Venceu!"
+                val winnerName = if (gameState[pos[0]] == 1) namePlayerX else namePlayerO
+                tvStatus.text = "$winnerName Venceu!"
 
                 if (gameState[pos[0]] == 1) scoreX++ else scoreO++
                 updateScoreBoard()
 
-                // Destacar botões vencedores
                 for (i in pos) {
                     buttons[i].setBackgroundColor(Color.parseColor("#33D4AF37"))
                 }
@@ -124,15 +146,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun resetGame() {
-        activePlayer = 1
+        activePlayer = initialStartingPlayer // Volta para quem foi escolhido para começar
         isGameActive = true
         gameState = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-        tvStatus.text = "Vez do Jogador X"
+        updateTurnDisplay()
 
         for (btn in buttons) {
             btn.text = ""
-            btn.setBackgroundColor(Color.parseColor("#1A1A1A")) // Cor original do botão
+            btn.setBackgroundColor(Color.parseColor("#1A1A1A"))
         }
     }
 }

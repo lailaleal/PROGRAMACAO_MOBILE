@@ -16,6 +16,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
+            android:id="@+id/ivMenu"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_centerVertical="true"
@@ -35,12 +36,13 @@
             android:textStyle="bold" />
 
         <ImageView
+            android:id="@+id/ivEditNames"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:src="@android:drawable/ic_menu_myplaces"
-            android:contentDescription="Perfil"
+            android:src="@android:drawable/ic_menu_edit"
+            android:contentDescription="Editar Nomes"
             app:tint="#D4AF37" />
     </RelativeLayout>
 
@@ -106,6 +108,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/tvLabelPlayerX"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="JOGADOR X"
@@ -159,6 +162,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/tvLabelPlayerO"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="JOGADOR O"

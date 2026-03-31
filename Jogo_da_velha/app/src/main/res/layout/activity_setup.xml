@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tvSetupTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:fontFamily="serif"
+        android:letterSpacing="0.2"
+        android:text="JOGO DA VELHA"
+        android:textColor="#D4AF37"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPlayer1"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:hint="Nome do Jogador 1 (X)"
+        android:textColorHint="#666666"
+        app:boxStrokeColor="#D4AF37"
+        app:hintTextColor="#D4AF37"
+        app:layout_constraintTop_toBottomOf="@id/tvSetupTitle">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPlayer1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPlayer2"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Nome do Jogador 2 (O)"
+        android:textColorHint="#666666"
+        app:boxStrokeColor="#D4AF37"
+        app:hintTextColor="#D4AF37"
+        app:layout_constraintTop_toBottomOf="@id/tilPlayer1">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPlayer2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/tvChooseLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Quem começa jogando?"
+        android:textColor="#E0E0E0"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tilPlayer2" />
+
+    <RadioGroup
+        android:id="@+id/rgStarter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvChooseLabel">
+
+        <RadioButton
+            android:id="@+id/rbPlayer1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:checked="true"
+            android:text="Jogador 1 (X)"
+            android:textColor="#FFFFFF"
+            android:buttonTint="#D4AF37" />
+
+        <RadioButton
+            android:id="@+id/rbPlayer2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Jogador 2 (O)"
+            android:textColor="#FFFFFF"
+            android:buttonTint="#D4AF37" />
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/btnStartGame"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#D4AF37"
+        android:text="INICIAR JOGO"
+        android:textColor="#121212"
+        android:textStyle="bold"
+        app:cornerRadius="16dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
