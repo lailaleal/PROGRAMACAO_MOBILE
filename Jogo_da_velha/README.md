@@ -32,11 +32,11 @@ Aqui estão alguns registros da interface do aplicativo:
 
 | Tela Inicial |                Vez do Jogador 1                 |
 | :---: |:-----------------------------------------------:|
-| ![Tela Inicial](screenshots/Tela_inicial.png) | ![Vez Jogador 2](screenshots/Vez_jogador_1.png) |
+| ![Tela Inicial](screenshots/Tela_inicial.png) | ![Vez Jogador 2](screenshots/Vez_jogador_2.png) |
 
 |                Vez do Jogador 2                 | Vitória de Partida |
 |:-----------------------------------------------:| :---: |
-| ![Vez Jogador 1](screenshots/Vez_jogador_2.png) | ![Vitória](screenshots/Vitoria_do_jogo.png) |
+| ![Vez Jogador 1](screenshots/Vez_jogador_1.png) | ![Vitória](screenshots/Vitoria_do_jogo.png) |
 
 ---
 
