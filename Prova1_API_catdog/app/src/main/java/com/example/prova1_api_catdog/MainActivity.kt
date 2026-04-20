@@ -17,12 +17,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import coil.compose.rememberAsyncImagePainter
 import com.example.prova1_api_catdog.ui.theme.Prova1_API_catdogTheme
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @Serializable
 data class PetImage(
