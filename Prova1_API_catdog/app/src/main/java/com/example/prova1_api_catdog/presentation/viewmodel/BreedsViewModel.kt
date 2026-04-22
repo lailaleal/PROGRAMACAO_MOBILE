@@ -12,7 +12,9 @@ data class UiState(
     val isLoading: Boolean = false,
     val breeds: List<Breed> = emptyList(),
     val errorMessage: String? = null,
-    val searchQuery: String = ""
+    val searchQuery: String = "",
+    val isEmptyResult: Boolean = false,        // NOVO: indica resultado vazio
+    val isFirstLoad: Boolean = true            // NOVO: nenhuma busca realizada ainda
 )
 
 class BreedsViewModel(
@@ -22,20 +24,18 @@ class BreedsViewModel(
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    // Campo privado para controlar a busca com debounce
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
     init {
-        // Observa as mudanças no searchQuery com debounce
         setupSearchDebounce()
     }
 
     private fun setupSearchDebounce() {
         viewModelScope.launch {
             _searchQuery
-                .debounce(500)  // Aguarda 500ms após o usuário parar de digitar
-                .distinctUntilChanged()  // Ignora se o valor não mudou
+                .debounce(500)
+                .distinctUntilChanged()
                 .collectLatest { query ->
                     performSearch(query)
                 }
@@ -44,10 +44,13 @@ class BreedsViewModel(
 
     private fun performSearch(query: String) {
         if (query.isBlank()) {
-            _uiState.value = _uiState.value.copy(
-                breeds = emptyList(),
+            _uiState.value = UiState(
                 isLoading = false,
-                errorMessage = null
+                breeds = emptyList(),
+                errorMessage = null,
+                searchQuery = query,
+                isEmptyResult = false,
+                isFirstLoad = false
             )
             return
         }
@@ -58,20 +61,26 @@ class BreedsViewModel(
                     is Result.Loading -> {
                         _uiState.value = _uiState.value.copy(
                             isLoading = true,
-                            errorMessage = null
+                            errorMessage = null,
+                            isEmptyResult = false
                         )
                     }
                     is Result.Success -> {
+                        val breedsList = result.data
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            breeds = result.data,
-                            errorMessage = null
+                            breeds = breedsList,
+                            errorMessage = null,
+                            isEmptyResult = breedsList.isEmpty(),
+                            isFirstLoad = false
                         )
                     }
                     is Result.Error -> {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            errorMessage = result.exception.message ?: "Erro na busca"
+                            errorMessage = result.exception.message ?: "Erro na busca",
+                            isEmptyResult = false,
+                            isFirstLoad = false
                         )
                     }
                 }
@@ -79,7 +88,6 @@ class BreedsViewModel(
         }
     }
 
-    // Função chamada pela UI quando o usuário digita
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
         _uiState.value = _uiState.value.copy(searchQuery = query)
