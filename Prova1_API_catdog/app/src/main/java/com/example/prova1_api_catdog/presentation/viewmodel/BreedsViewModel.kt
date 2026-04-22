@@ -5,13 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.prova1_api_catdog.core.Result
 import com.example.prova1_api_catdog.data.repository.BreedRepository
 import com.example.prova1_api_catdog.domain.model.Breed
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-// UI State - Representa o estado da tela
 data class UiState(
     val isLoading: Boolean = false,
     val breeds: List<Breed> = emptyList(),
@@ -23,49 +19,36 @@ class BreedsViewModel(
     private val repository: BreedRepository
 ) : ViewModel() {
 
-    // Estado privado (pode ser modificado)
     private val _uiState = MutableStateFlow(UiState())
-
-    // Estado público (apenas leitura)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    // Buscar todas as raças
-    fun getAllBreeds() {
+    // Campo privado para controlar a busca com debounce
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    init {
+        // Observa as mudanças no searchQuery com debounce
+        setupSearchDebounce()
+    }
+
+    private fun setupSearchDebounce() {
         viewModelScope.launch {
-            repository.getAllBreeds().collectLatest { result ->
-                when (result) {
-                    is Result.Loading -> {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = true,
-                            errorMessage = null
-                        )
-                    }
-                    is Result.Success -> {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            breeds = result.data,
-                            errorMessage = null
-                        )
-                    }
-                    is Result.Error -> {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            errorMessage = result.exception.message ?: "Erro desconhecido"
-                        )
-                    }
+            _searchQuery
+                .debounce(500)  // Aguarda 500ms após o usuário parar de digitar
+                .distinctUntilChanged()  // Ignora se o valor não mudou
+                .collectLatest { query ->
+                    performSearch(query)
                 }
-            }
         }
     }
 
-    // Buscar raça por nome
-    fun searchBreeds(query: String) {
-        // Atualiza o searchQuery no UiState
-        _uiState.value = _uiState.value.copy(searchQuery = query)
-
-        // Se a busca estiver vazia, limpa os resultados
+    private fun performSearch(query: String) {
         if (query.isBlank()) {
-            _uiState.value = _uiState.value.copy(breeds = emptyList())
+            _uiState.value = _uiState.value.copy(
+                breeds = emptyList(),
+                isLoading = false,
+                errorMessage = null
+            )
             return
         }
 
@@ -96,7 +79,12 @@ class BreedsViewModel(
         }
     }
 
-    // Limpar erro
+    // Função chamada pela UI quando o usuário digita
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+        _uiState.value = _uiState.value.copy(searchQuery = query)
+    }
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
