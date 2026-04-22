@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,7 +13,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
+import com.example.prova1_api_catdog.core.RetrofitInstance
+import com.example.prova1_api_catdog.data.repository.BreedRepository
+import com.example.prova1_api_catdog.presentation.viewmodel.BreedsViewModel
 import com.example.prova1_api_catdog.ui.theme.Prova1_API_catdogTheme
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +26,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
+
 
 @Serializable
 data class PetImage(
@@ -54,15 +58,16 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PetSearchApp() {
+    // ========== PARTE 1: APP DE IMAGENS (já existente) ==========
     var selectedPet by remember { mutableStateOf("cat") }
-    var uiState by remember { mutableStateOf<UiState>(UiState.Loading) }
+    var imageUiState by remember { mutableStateOf<UiState>(UiState.Loading) }
     val coroutineScope = rememberCoroutineScope()
 
     fun fetchPets() {
         coroutineScope.launch {
-            uiState = UiState.Loading
+            imageUiState = UiState.Loading
             val result = fetchPetImages(selectedPet)
-            uiState = if (result.isNullOrEmpty()) {
+            imageUiState = if (result.isNullOrEmpty()) {
                 UiState.Empty
             } else {
                 UiState.Success(result)
@@ -74,10 +79,19 @@ fun PetSearchApp() {
         fetchPets()
     }
 
+    // ========== PARTE 2: BUSCA DE RAÇAS (nova) ==========
+    val repository = BreedRepository(RetrofitInstance.apiService)
+    val viewModel: BreedsViewModel = viewModel(
+        factory = BreedsViewModel.Factory(repository)
+    )
+
+    val uiState by viewModel.uiState.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("PetSearchApp - Busca de Pets") }
+                title = { Text("PetSearchApp - Busca de Pets e Raças") }
             )
         }
     ) { innerPadding ->
@@ -88,6 +102,115 @@ fun PetSearchApp() {
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Seção de busca de raças (NOVA)
+            Text(
+                text = "🔍 Busca de Raças",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.updateSearchQuery(it) },
+                label = { Text("Digite o nome da raça") },
+                placeholder = { Text("Ex: Bengal, Siamese, Persian...") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Estados da busca de raças
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Buscando raças...")
+                        }
+                    }
+                }
+                uiState.errorMessage != null -> {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("❌ ${uiState.errorMessage}")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(onClick = { viewModel.clearError() }) {
+                                Text("Tentar novamente")
+                            }
+                        }
+                    }
+                }
+                uiState.isEmptyResult && !uiState.isFirstLoad -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("😢 Nenhuma raça encontrada para \"$searchQuery\"")
+                            Text("Tente outro nome de raça", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+                uiState.isFirstLoad -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("🔍 Digite o nome de uma raça para buscar")
+                            Text("Exemplos: Bengal, Siamese, Persian, Maine Coon",
+                                style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+                uiState.breeds.isNotEmpty() -> {
+                    LazyColumn(
+                        modifier = Modifier.heightIn(max = 300.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(uiState.breeds) { breed ->
+                            BreedCard(breed = breed)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Divider()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Seção de imagens de pets (já existente)
+            Text(
+                text = "🐾 Fotos Aleatórias",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -106,14 +229,14 @@ fun PetSearchApp() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            when (val state = uiState) {
+            when (val state = imageUiState) {
                 is UiState.Loading -> {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator()
-                        Text("Carregando...", modifier = Modifier.padding(top = 60.dp))
+                        Text("Carregando...", modifier = Modifier.padding(top = 8.dp))
                     }
                 }
                 is UiState.Success -> {
@@ -125,7 +248,7 @@ fun PetSearchApp() {
                 }
                 is UiState.Error -> {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -139,12 +262,54 @@ fun PetSearchApp() {
                 }
                 is UiState.Empty -> {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
                         Text("😢 Nenhum pet encontrado. Tente novamente.")
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun BreedCard(breed: com.example.prova1_api_catdog.domain.model.Breed) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+        ) {
+            Text(
+                text = breed.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            if (breed.origin.isNotEmpty()) {
+                Text(
+                    text = "🌍 Origem: ${breed.origin}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            if (breed.temperament.isNotEmpty()) {
+                Text(
+                    text = "🎭 Temperamento: ${breed.temperament}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            if (breed.description.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = breed.description.take(100) + if (breed.description.length > 100) "..." else "",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }
@@ -162,7 +327,7 @@ fun PetCard(pet: PetImage) {
             modifier = Modifier.padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
+            androidx.compose.foundation.Image(
                 painter = rememberAsyncImagePainter(pet.url),
                 contentDescription = "Pet",
                 modifier = Modifier

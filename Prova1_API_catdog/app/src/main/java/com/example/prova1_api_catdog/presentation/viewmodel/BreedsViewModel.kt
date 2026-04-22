@@ -96,4 +96,15 @@ class BreedsViewModel(
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
+
+    companion object {
+        fun Factory(repository: BreedRepository): androidx.lifecycle.ViewModelProvider.Factory {
+            return object : androidx.lifecycle.ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                    return BreedsViewModel(repository) as T
+                }
+            }
+        }
+    }
 }
