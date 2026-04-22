@@ -13,8 +13,8 @@ data class UiState(
     val breeds: List<Breed> = emptyList(),
     val errorMessage: String? = null,
     val searchQuery: String = "",
-    val isEmptyResult: Boolean = false,        // NOVO: indica resultado vazio
-    val isFirstLoad: Boolean = true            // NOVO: nenhuma busca realizada ainda
+    val isEmptyResult: Boolean = false,
+    val isFirstLoad: Boolean = true
 )
 
 class BreedsViewModel(
