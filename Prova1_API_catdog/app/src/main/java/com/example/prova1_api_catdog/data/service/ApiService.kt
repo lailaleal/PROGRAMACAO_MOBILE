@@ -16,7 +16,7 @@ interface ApiService {
         @Query("q") query: String
     ): List<BreedResponse>
 
-    // Endpoint para buscar imagens por raça (opcional - complementar)
+    // Endpoint para buscar imagens por raça
     @GET("v1/images/search")
     suspend fun searchImagesByBreed(
         @Query("breed_ids") breedId: String,
