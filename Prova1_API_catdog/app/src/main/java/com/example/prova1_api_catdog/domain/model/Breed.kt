@@ -6,6 +6,5 @@ data class Breed(
     val description: String,
     val origin: String,
     val temperament: String,
-    val imageUrl: String
+    val imageUrl: String = ""   // ← ESSENCIAL!
 )
-

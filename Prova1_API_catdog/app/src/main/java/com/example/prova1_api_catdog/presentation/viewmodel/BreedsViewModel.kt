@@ -1,6 +1,7 @@
 package com.example.prova1_api_catdog.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.prova1_api_catdog.core.Result
 import com.example.prova1_api_catdog.data.repository.BreedRepository
@@ -18,7 +19,8 @@ data class UiState(
 )
 
 class BreedsViewModel(
-    private val repository: BreedRepository
+    private val repository: BreedRepository,
+    private var petType: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
@@ -56,7 +58,7 @@ class BreedsViewModel(
         }
 
         viewModelScope.launch {
-            repository.searchBreeds(query).collectLatest { result ->
+            repository.searchBreeds(query, petType).collectLatest { result ->
                 when (result) {
                     is Result.Loading -> {
                         _uiState.value = _uiState.value.copy(
@@ -93,16 +95,23 @@ class BreedsViewModel(
         _uiState.value = _uiState.value.copy(searchQuery = query)
     }
 
+    fun updatePetType(newType: String) {
+        petType = newType
+        // Limpa a busca atual
+        _searchQuery.value = ""
+        _uiState.value = UiState(isFirstLoad = true)
+    }
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
 
     companion object {
-        fun Factory(repository: BreedRepository): androidx.lifecycle.ViewModelProvider.Factory {
-            return object : androidx.lifecycle.ViewModelProvider.Factory {
+        fun Factory(repository: BreedRepository, petType: String): ViewModelProvider.Factory {
+            return object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
-                override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-                    return BreedsViewModel(repository) as T
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return BreedsViewModel(repository, petType) as T
                 }
             }
         }

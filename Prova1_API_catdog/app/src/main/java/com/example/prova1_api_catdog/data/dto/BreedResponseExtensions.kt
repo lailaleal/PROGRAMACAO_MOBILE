@@ -9,7 +9,7 @@ fun BreedResponse.toDomainModel(): Breed {
         description = this.description ?: "Sem descrição",
         origin = this.origin ?: "Origem desconhecida",
         temperament = this.temperament ?: "Sem informação",
-        imageUrl = "https://cdn2.thecatapi.com/images/${this.reference_image_id}.jpg"
+        imageUrl = ""  // Será preenchido depois
     )
 }
 
