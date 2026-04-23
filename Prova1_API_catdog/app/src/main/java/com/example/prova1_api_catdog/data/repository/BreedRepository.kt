@@ -27,14 +27,19 @@ class BreedRepository(
         }
 
         val apiService = if (petType == "cat") catApiService else dogApiService
+        val imageHost = if (petType == "cat") "thecatapi.com" else "thedogapi.com"
 
         safeApiCall {
             val response: List<BreedResponse> = apiService.searchBreedsByName(query)
-
             val breedsWithImages = response.map { breedResponse ->
-                val images = apiService.searchImagesByBreedId(breedResponse.id, 1)
-                val imageUrl = images.firstOrNull()?.url ?: ""
-                breedResponse.toDomainModel().copy(imageUrl = imageUrl)
+                if (breedResponse.image?.url != null) {
+                    breedResponse.toDomainModel()
+                } else if (breedResponse.reference_image_id != null) {
+                    val imageUrl = "https://cdn2.$imageHost/images/${breedResponse.reference_image_id}.jpg"
+                    breedResponse.toDomainModel().copy(imageUrl = imageUrl)
+                } else {
+                    breedResponse.toDomainModel()
+                }
             }
 
             cache[cacheKey] = breedsWithImages

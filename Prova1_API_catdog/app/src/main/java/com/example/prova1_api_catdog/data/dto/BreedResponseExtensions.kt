@@ -9,7 +9,7 @@ fun BreedResponse.toDomainModel(): Breed {
         description = this.description ?: "Sem descrição",
         origin = this.origin ?: "Origem desconhecida",
         temperament = this.temperament ?: "Sem informação",
-        imageUrl = ""  // Será preenchido depois
+        imageUrl = this.image?.url ?: ""
     )
 }
 

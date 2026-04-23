@@ -9,5 +9,6 @@ data class BreedResponse(
     val description: String? = "",
     val origin: String? = "",
     val temperament: String? = "",
-    val reference_image_id: String? = null
+    val reference_image_id: String? = null,
+    val image: PetImage? = null
 )

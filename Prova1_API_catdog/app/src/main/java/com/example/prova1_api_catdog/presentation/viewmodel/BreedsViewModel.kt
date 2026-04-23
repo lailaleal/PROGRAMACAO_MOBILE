@@ -29,6 +29,8 @@ class BreedsViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private var searchJob: kotlinx.coroutines.Job? = null
+
     init {
         setupSearchDebounce()
     }
@@ -45,6 +47,8 @@ class BreedsViewModel(
     }
 
     private fun performSearch(query: String) {
+        searchJob?.cancel() // Cancela a busca anterior se houver uma nova
+        
         if (query.isBlank()) {
             _uiState.value = UiState(
                 isLoading = false,
@@ -57,8 +61,8 @@ class BreedsViewModel(
             return
         }
 
-        viewModelScope.launch {
-            repository.searchBreeds(query, petType).collectLatest { result ->
+        searchJob = viewModelScope.launch {
+            repository.searchBreeds(query, petType).collect { result ->
                 when (result) {
                     is Result.Loading -> {
                         _uiState.value = _uiState.value.copy(
