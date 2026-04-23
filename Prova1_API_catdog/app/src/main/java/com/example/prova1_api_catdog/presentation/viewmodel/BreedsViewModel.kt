@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 data class UiState(
     val isLoading: Boolean = false,
     val breeds: List<Breed> = emptyList(),
+    val randomPhotos: List<String> = emptyList(), // Adicionado para a Home
     val errorMessage: String? = null,
     val searchQuery: String = "",
     val isEmptyResult: Boolean = false,
@@ -32,7 +33,18 @@ class BreedsViewModel(
     private var searchJob: kotlinx.coroutines.Job? = null
 
     init {
+        loadHomePhotos() // Carrega as 4 fotos ao iniciar
         setupSearchDebounce()
+    }
+
+    private fun loadHomePhotos() {
+        viewModelScope.launch {
+            repository.getRandomPhotos().collect { result ->
+                if (result is Result.Success) {
+                    _uiState.update { it.copy(randomPhotos = result.data) }
+                }
+            }
+        }
     }
 
     private fun setupSearchDebounce() {
@@ -50,14 +62,16 @@ class BreedsViewModel(
         searchJob?.cancel() // Cancela a busca anterior se houver uma nova
         
         if (query.isBlank()) {
-            _uiState.value = UiState(
-                isLoading = false,
-                breeds = emptyList(),
-                errorMessage = null,
-                searchQuery = query,
-                isEmptyResult = false,
-                isFirstLoad = false
-            )
+            _uiState.update { 
+                it.copy(
+                    isLoading = false,
+                    breeds = emptyList(),
+                    errorMessage = null,
+                    searchQuery = query,
+                    isEmptyResult = false,
+                    isFirstLoad = true // Volta para o estado inicial
+                )
+            }
             return
         }
 
@@ -65,29 +79,35 @@ class BreedsViewModel(
             repository.searchBreeds(query, petType).collect { result ->
                 when (result) {
                     is Result.Loading -> {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = true,
-                            errorMessage = null,
-                            isEmptyResult = false
-                        )
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = true,
+                                errorMessage = null,
+                                isEmptyResult = false
+                            )
+                        }
                     }
                     is Result.Success -> {
                         val breedsList = result.data
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            breeds = breedsList,
-                            errorMessage = null,
-                            isEmptyResult = breedsList.isEmpty(),
-                            isFirstLoad = false
-                        )
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false,
+                                breeds = breedsList,
+                                errorMessage = null,
+                                isEmptyResult = breedsList.isEmpty(),
+                                isFirstLoad = false
+                            )
+                        }
                     }
                     is Result.Error -> {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            errorMessage = result.exception.message ?: "Erro na busca",
-                            isEmptyResult = false,
-                            isFirstLoad = false
-                        )
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = result.exception.message ?: "Erro na busca",
+                                isEmptyResult = false,
+                                isFirstLoad = false
+                            )
+                        }
                     }
                 }
             }
@@ -96,14 +116,20 @@ class BreedsViewModel(
 
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
-        _uiState.value = _uiState.value.copy(searchQuery = query)
+        _uiState.update { it.copy(searchQuery = query) }
     }
 
     fun updatePetType(newType: String) {
         petType = newType
-        // Limpa a busca atual
+        // Mantemos as fotos da home, apenas resetamos o estado de busca
         _searchQuery.value = ""
-        _uiState.value = UiState(isFirstLoad = true)
+        _uiState.update { 
+            it.copy(
+                breeds = emptyList(),
+                searchQuery = "",
+                isFirstLoad = true 
+            )
+        }
     }
 
     fun clearError() {

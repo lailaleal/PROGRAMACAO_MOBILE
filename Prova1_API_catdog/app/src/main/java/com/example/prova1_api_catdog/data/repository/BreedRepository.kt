@@ -21,7 +21,10 @@ class BreedRepository(
         val normalizedQuery = query.lowercase().trim()
         val cacheKey = "${petType}_$normalizedQuery"
 
+        println("🔍 Buscando: $query para o tipo: $petType")
+
         cache[cacheKey]?.let {
+            println("📦 Retornando do cache: $cacheKey")
             emit(Result.Success(it))
             return@flow
         }
@@ -31,21 +34,39 @@ class BreedRepository(
 
         safeApiCall {
             val response: List<BreedResponse> = apiService.searchBreedsByName(query)
+            println("🌐 API Respondeu com ${response.size} raças")
+
             val breedsWithImages = response.map { breedResponse ->
-                if (breedResponse.image?.url != null) {
-                    breedResponse.toDomainModel()
-                } else if (breedResponse.reference_image_id != null) {
-                    val imageUrl = "https://cdn2.$imageHost/images/${breedResponse.reference_image_id}.jpg"
-                    breedResponse.toDomainModel().copy(imageUrl = imageUrl)
-                } else {
-                    breedResponse.toDomainModel()
+                val imageUrl = when {
+                    breedResponse.image?.url != null -> breedResponse.image.url
+                    breedResponse.reference_image_id != null -> {
+                        "https://cdn2.$imageHost/images/${breedResponse.reference_image_id}.jpg"
+                    }
+                    else -> ""
                 }
+                breedResponse.toDomainModel().copy(imageUrl = imageUrl)
             }
 
             cache[cacheKey] = breedsWithImages
             breedsWithImages
         }.collect { result ->
             emit(result)
+        }
+    }
+
+    fun getRandomPhotos(): Flow<Result<List<String>>> = flow {
+        emit(Result.Loading)
+        try {
+            // Buscamos fotos de gatos e cães de forma segura (se um falhar, o outro continua)
+            val cats = try { catApiService.getRandomImages(2).mapNotNull { it.url } } catch (e: Exception) { emptyList() }
+            val dogs = try { dogApiService.getRandomImages(2).mapNotNull { it.url } } catch (e: Exception) { emptyList() }
+            
+            val allPhotos = (cats + dogs).shuffled()
+            println("📸 Home: Carregadas ${allPhotos.size} fotos aleatórias")
+            emit(Result.Success(allPhotos))
+        } catch (e: Exception) {
+            println("❌ Erro ao carregar fotos da home: ${e.message}")
+            emit(Result.Error(e))
         }
     }
 

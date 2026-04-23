@@ -27,15 +27,33 @@ import com.example.prova1_api_catdog.domain.model.Breed
 import com.example.prova1_api_catdog.presentation.viewmodel.BreedsViewModel
 import com.example.prova1_api_catdog.ui.theme.Prova1_API_catdogTheme
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.filled.Favorite
+
+// Como Icons.Default.Pets pode exigir a biblioteca 'extended', vamos usar um ícone padrão do Compose
+// para garantir que não quebre o seu projeto agora.
+val PetIcon = Icons.Default.Favorite 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen() {
-    var selectedPetType by remember { mutableStateOf("cat") }
+    var selectedPetType by remember { mutableStateOf("dog") }
 
-    val repository = BreedRepository(
-        RetrofitInstance.catApiService,
-        RetrofitInstance.dogApiService
-    )
+    val repository = remember {
+        BreedRepository(
+            RetrofitInstance.catApiService,
+            RetrofitInstance.dogApiService
+        )
+    }
 
     val viewModel: BreedsViewModel = viewModel(
         factory = BreedsViewModel.Factory(repository, selectedPetType)
@@ -46,6 +64,12 @@ fun SearchScreen() {
 
     var textFieldValue by rememberSaveable { mutableStateOf(searchQuery) }
 
+    // Cores do layout (inspirado na imagem)
+    val backgroundColor = Color(0xFFFFFBF0)
+    val brandOrange = Color(0xFFE65100)
+    val dogGreen = Color(0xFF00897B)
+    val catGray = Color(0xFF455A64)
+
     LaunchedEffect(textFieldValue) {
         viewModel.updateSearchQuery(textFieldValue)
     }
@@ -54,109 +78,222 @@ fun SearchScreen() {
         viewModel.updatePetType(selectedPetType)
     }
 
-    Column(
+    Surface(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .systemBarsPadding(),
+        color = backgroundColor
     ) {
-        // Botões para escolher Gato ou Cachorro
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp)
         ) {
-            FilterChip(
-                selected = selectedPetType == "cat",
-                onClick = { selectedPetType = "cat" },
-                label = { Text("🐱 Gatos", fontSize = 16.sp) }
-            )
-            FilterChip(
-                selected = selectedPetType == "dog",
-                onClick = { selectedPetType = "dog" },
-                label = { Text("🐶 Cachorros", fontSize = 16.sp) }
-            )
-        }
+            Spacer(modifier = Modifier.height(8.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = textFieldValue,
-            onValueChange = { textFieldValue = it },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Digite o nome da raça...", fontSize = 16.sp) },
-            singleLine = true,
-            textStyle = LocalTextStyle.current.copy(fontSize = 16.sp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        when {
-            uiState.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Buscando ${if (selectedPetType == "cat") "gatos" else "cachorros"}...", fontSize = 16.sp)
-                    }
-                }
+            // Logo Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = PetIcon,
+                    contentDescription = null,
+                    tint = brandOrange,
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "BuscaPet",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = brandOrange
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    tint = brandOrange,
+                    modifier = Modifier.size(28.dp)
+                )
             }
 
-            uiState.errorMessage != null -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("❌ ${uiState.errorMessage}", fontSize = 16.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.clearError() }) {
-                            Text("Tentar novamente", fontSize = 14.sp)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Barra de busca arredondada
+            OutlinedTextField(
+                value = textFieldValue,
+                onValueChange = { textFieldValue = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(Color.White),
+                placeholder = { 
+                    Text(
+                        "Encontre seu novo melhor amigo", 
+                        color = Color.LightGray,
+                        fontSize = 16.sp
+                    ) 
+                },
+                leadingIcon = { 
+                    Icon(Icons.Default.Search, contentDescription = null, tint = brandOrange) 
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = brandOrange
+                ),
+                shape = RoundedCornerShape(28.dp),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Botões de Filtro
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                PetFilterButton(
+                    text = "Cachorros",
+                    isSelected = selectedPetType == "dog",
+                    activeColor = dogGreen,
+                    onClick = { selectedPetType = "dog" },
+                    modifier = Modifier.weight(1f)
+                )
+                PetFilterButton(
+                    text = "Gatos",
+                    isSelected = selectedPetType == "cat",
+                    activeColor = catGray,
+                    onClick = { selectedPetType = "cat" },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Conteúdo Principal
+            Box(modifier = Modifier.weight(1f)) {
+                when {
+                    uiState.isLoading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center),
+                            color = brandOrange
+                        )
+                    }
+
+                    uiState.errorMessage != null -> {
+                        ErrorMessage(uiState.errorMessage!!) { viewModel.clearError() }
+                    }
+
+                    uiState.isFirstLoad -> {
+                        Column {
+                            Text(
+                                "Sugestões para você",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.DarkGray,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(uiState.randomPhotos) { url ->
+                                    AsyncImage(
+                                        model = url,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .aspectRatio(1f)
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(Color.White),
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                    )
+                                }
+                            }
                         }
                     }
-                }
-            }
 
-            uiState.isEmptyResult && !uiState.isFirstLoad -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("😢 Nenhuma raça encontrada para \"$searchQuery\"", fontSize = 16.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Tente outro nome de raça", style = MaterialTheme.typography.bodySmall, fontSize = 14.sp)
+                    uiState.breeds.isNotEmpty() -> {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            contentPadding = PaddingValues(bottom = 80.dp)
+                        ) {
+                            items(uiState.breeds) { breed ->
+                                BreedCard(breed = breed)
+                            }
+                        }
                     }
-                }
-            }
 
-            uiState.isFirstLoad -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("🔍 Escolha Gatos ou Cachorros e digite uma raça", fontSize = 16.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
+                    uiState.isEmptyResult -> {
                         Text(
-                            text = if (selectedPetType == "cat") "Exemplos: Bengal, Siamese, Persian" else "Exemplos: Labrador, Beagle, Poodle",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontSize = 14.sp
+                            "Nenhum pet encontrado.",
+                            modifier = Modifier.align(Alignment.Center),
+                            color = Color.Gray
                         )
                     }
                 }
             }
+        }
+    }
+}
 
-            uiState.breeds.isNotEmpty() -> {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(uiState.breeds) { breed ->
-                        BreedCard(breed = breed)
-                    }
-                }
-            }
+@Composable
+fun PetFilterButton(
+    text: String,
+    isSelected: Boolean,
+    activeColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor = if (isSelected) activeColor.copy(alpha = 0.1f) else Color.White
+    val contentColor = if (isSelected) activeColor else Color.DarkGray
+
+    Surface(
+        modifier = modifier
+            .height(50.dp)
+            .clip(RoundedCornerShape(25.dp))
+            .clickable { onClick() },
+        color = backgroundColor,
+        border = if (!isSelected) BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f)) else null
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            Icon(
+                imageVector = PetIcon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = contentColor
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = text,
+                color = contentColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun ErrorMessage(message: String, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("❌ $message", color = Color.Red)
+        Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE65100))) {
+            Text("Tentar novamente")
         }
     }
 }
@@ -190,7 +327,7 @@ fun BreedCard(breed: Breed) {
                 contentDescription = "Imagem de ${breed.name}",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp)
+                    .height(180.dp)
                     .clip(RoundedCornerShape(16.dp)),
                 placeholder = painterResource(id = android.R.drawable.ic_menu_gallery),
                 error = painterResource(id = android.R.drawable.ic_menu_report_image)
@@ -246,9 +383,9 @@ fun BreedCard(breed: Breed) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = breed.description,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 15.sp,
-                    lineHeight = 22.sp
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
                 )
             }
         }

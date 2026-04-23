@@ -23,4 +23,10 @@ interface ApiService {
         @Query("breed_ids") breedId: String,
         @Query("limit") limit: Int = 10
     ): List<PetImage>
+
+    // Buscar imagens aleatórias (para a tela inicial)
+    @GET("v1/images/search")
+    suspend fun getRandomImages(
+        @Query("limit") limit: Int = 2
+    ): List<PetImage>
 }
