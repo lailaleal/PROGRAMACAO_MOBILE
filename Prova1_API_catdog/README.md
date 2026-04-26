@@ -84,4 +84,4 @@ O aplicativo integra duas das APIs de pets mais populares do mundo:
 Este projeto foi desenvolvido para fins acadêmicos como parte da disciplina de Programação Mobile.
 
 ---
-<p align="center">Desenvolvido com por Laila Leal</p>
+<p"center">Desenvolvido por Laila Leal</p>
