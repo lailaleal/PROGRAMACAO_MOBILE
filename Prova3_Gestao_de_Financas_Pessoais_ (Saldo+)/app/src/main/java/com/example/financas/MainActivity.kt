@@ -3,7 +3,7 @@ package com.example.financas
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.example.financas.ui.screens.TelaFinancas
+import com.example.financas.ui.screens.NavGraph
 import com.example.financas.ui.theme.FinancasTheme
 
 class MainActivity : ComponentActivity() {
@@ -11,7 +11,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FinancasTheme {
-                TelaFinancas()
+                NavGraph()
             }
         }
     }
