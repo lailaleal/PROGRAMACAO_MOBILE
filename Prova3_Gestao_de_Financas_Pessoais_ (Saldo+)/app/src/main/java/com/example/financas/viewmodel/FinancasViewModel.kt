@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.financas.model.Categoria
 import com.example.financas.model.Despesa
 
 class FinancasViewModel : ViewModel() {
@@ -53,7 +54,11 @@ class FinancasViewModel : ViewModel() {
         return false
     }
 
-    fun adicionarDespesa(nome: String, valorTexto: String): Boolean {
+    fun adicionarDespesa(
+        nome: String,
+        valorTexto: String,
+        categoria: Categoria = Categoria.OUTROS
+    ): Boolean {
         erroNomeDespesa = when {
             nome.isBlank() -> "O nome da despesa não pode estar vazio."
             nome.length > 40 -> "O nome deve ter no máximo 40 caracteres."
@@ -67,7 +72,11 @@ class FinancasViewModel : ViewModel() {
             else -> null
         }
         if (erroNomeDespesa == null && erroValorDespesa == null && valor != null) {
-            val novaDespesa = Despesa(nome = nome.trim(), valor = valor)
+            val novaDespesa = Despesa(
+                nome = nome.trim(),
+                valor = valor,
+                categoria = categoria
+            )
             despesas.value = despesas.value + novaDespesa
             return true
         }
