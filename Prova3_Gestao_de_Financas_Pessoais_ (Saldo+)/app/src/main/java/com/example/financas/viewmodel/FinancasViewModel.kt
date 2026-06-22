@@ -86,4 +86,8 @@ class FinancasViewModel : ViewModel() {
     fun removerDespesa(id: String) {
         despesas.value = despesas.value.filterNot { it.id == id }
     }
+
+    fun limparTodas() {
+        despesas.value = emptyList()
+    }
 }

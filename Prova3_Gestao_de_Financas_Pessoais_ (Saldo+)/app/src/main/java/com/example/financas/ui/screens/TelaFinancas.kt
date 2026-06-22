@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -31,9 +32,11 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
     var categoriaSelecionada by remember { mutableStateOf(Categoria.OUTROS) }
     var despesaParaDeletar by remember { mutableStateOf<String?>(null) }
     var expandirCategoria by remember { mutableStateOf(false) }
+    var mostrarDialogoLimpar by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val formatoMoeda = remember { NumberFormat.getCurrencyInstance(Locale("pt", "BR")) }
+    val goldColor = Color(0xFFD4AF37)
 
     if (despesaParaDeletar != null) {
         AlertDialog(
@@ -50,6 +53,27 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
             },
             dismissButton = {
                 TextButton(onClick = { despesaParaDeletar = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    if (mostrarDialogoLimpar) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoLimpar = false },
+            title = { Text("Limpar todas as despesas") },
+            text = { Text("Tem certeza que deseja remover TODAS as despesas?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.limparTodas()
+                    mostrarDialogoLimpar = false
+                }) {
+                    Text("Limpar tudo", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogoLimpar = false }) {
                     Text("Cancelar")
                 }
             }
@@ -188,6 +212,55 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
                                 }
                             )
                         }
+
+                        if (viewModel.despesas.value.isNotEmpty()) {
+                            val maiorDespesa = viewModel.despesas.value.maxByOrNull { it.valor }
+                            maiorDespesa?.let {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "Maior gasto:",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = it.categoria.icon,
+                                            contentDescription = null,
+                                            tint = goldColor,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = it.nome,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "Nº de despesas:",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = "${viewModel.despesas.value.size}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+
                         if (viewModel.orcamentoExcedido) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
@@ -209,7 +282,7 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
                 }
             }
 
-            // ---------- CARD: GRÁFICO DE PIZZA ----------
+            // ---------- CARD: GRÁFICO ----------
             if (viewModel.despesas.value.isNotEmpty()) {
                 item {
                     Card(modifier = Modifier.fillMaxWidth()) {
@@ -274,10 +347,18 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
                             onExpandedChange = { expandirCategoria = it }
                         ) {
                             OutlinedTextField(
-                                value = "${categoriaSelecionada.emoji} ${categoriaSelecionada.label}",
+                                value = categoriaSelecionada.label,
                                 onValueChange = {},
                                 readOnly = true,
                                 label = { Text("Categoria") },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = categoriaSelecionada.icon,
+                                        contentDescription = null,
+                                        tint = goldColor,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                },
                                 trailingIcon = {
                                     ExposedDropdownMenuDefaults.TrailingIcon(
                                         expanded = expandirCategoria
@@ -293,7 +374,15 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
                             ) {
                                 Categoria.entries.forEach { cat ->
                                     DropdownMenuItem(
-                                        text = { Text("${cat.emoji} ${cat.label}") },
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = cat.icon,
+                                                contentDescription = null,
+                                                tint = goldColor,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        },
+                                        text = { Text(cat.label) },
                                         onClick = {
                                             categoriaSelecionada = cat
                                             expandirCategoria = false
@@ -324,12 +413,27 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
 
             // ---------- LISTA DE DESPESAS ----------
             item {
-                Text(
-                    text = "Despesas cadastradas (${viewModel.despesas.value.size})",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Despesas (${viewModel.despesas.value.size})",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (viewModel.despesas.value.isNotEmpty()) {
+                        TextButton(onClick = { mostrarDialogoLimpar = true }) {
+                            Text(
+                                text = "Limpar tudo",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                }
             }
 
             if (viewModel.despesas.value.isEmpty()) {
@@ -357,9 +461,11 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text(
-                                    text = despesa.categoria.emoji,
-                                    fontSize = 24.sp
+                                Icon(
+                                    imageVector = despesa.categoria.icon,
+                                    contentDescription = null,
+                                    tint = goldColor,
+                                    modifier = Modifier.size(28.dp)
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {

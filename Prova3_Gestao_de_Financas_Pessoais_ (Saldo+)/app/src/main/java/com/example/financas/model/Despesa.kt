@@ -1,16 +1,19 @@
 package com.example.financas.model
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.graphics.vector.ImageVector
 import java.util.UUID
 
-enum class Categoria(val label: String, val emoji: String) {
-    ALIMENTACAO("Alimentação", "🍔"),
-    TRANSPORTE("Transporte", "🚗"),
-    SAUDE("Saúde", "💊"),
-    LAZER("Lazer", "🎮"),
-    MORADIA("Moradia", "🏠"),
-    EDUCACAO("Educação", "📚"),
-    VESTUARIO("Vestuário", "👗"),
-    OUTROS("Outros", "💳")
+enum class Categoria(val label: String, val icon: ImageVector) {
+    ALIMENTACAO("Alimentação", Icons.Filled.Restaurant),
+    TRANSPORTE("Transporte", Icons.Filled.DirectionsCar),
+    SAUDE("Saúde", Icons.Filled.LocalHospital),
+    LAZER("Lazer", Icons.Filled.SportsEsports),
+    MORADIA("Moradia", Icons.Filled.Home),
+    EDUCACAO("Educação", Icons.Filled.MenuBook),
+    VESTUARIO("Vestuário", Icons.Filled.Checkroom),
+    OUTROS("Outros", Icons.Filled.AccountBalanceWallet)
 }
 
 data class Despesa(

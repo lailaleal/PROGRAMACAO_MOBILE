@@ -2,6 +2,7 @@ package com.example.financas.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,13 +19,13 @@ import com.example.financas.model.Despesa
 
 val coresCategorias = mapOf(
     Categoria.ALIMENTACAO to Color(0xFFD4AF37),
-    Categoria.TRANSPORTE to Color(0xFF4CAF82),
-    Categoria.SAUDE to Color(0xFFB85C5C),
-    Categoria.LAZER to Color(0xFF5C8CB8),
-    Categoria.MORADIA to Color(0xFF8C5CB8),
-    Categoria.EDUCACAO to Color(0xFFB8875C),
-    Categoria.VESTUARIO to Color(0xFF5CB8B0),
-    Categoria.OUTROS to Color(0xFF888888)
+    Categoria.TRANSPORTE  to Color(0xFFB8932C),
+    Categoria.SAUDE       to Color(0xFFE8C766),
+    Categoria.LAZER       to Color(0xFFC8A951),
+    Categoria.MORADIA     to Color(0xFF8B6914),
+    Categoria.EDUCACAO    to Color(0xFFD4964A),
+    Categoria.VESTUARIO   to Color(0xFFEDD99A),
+    Categoria.OUTROS      to Color(0xFF6B5B2E)
 )
 
 @Composable
@@ -54,16 +55,11 @@ fun GraficoPizza(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Gráfico de pizza
-            Canvas(
-                modifier = Modifier
-                    .size(150.dp)
-            ) {
+            Canvas(modifier = Modifier.size(150.dp)) {
                 var startAngle = -90f
                 totalPorCategoria.forEach { (categoria, valor) ->
                     val sweepAngle = (valor / total * 360).toFloat()
                     val cor = coresCategorias[categoria] ?: Color.Gray
-
                     drawArc(
                         color = cor,
                         startAngle = startAngle,
@@ -74,17 +70,10 @@ fun GraficoPizza(
                     )
                     startAngle += sweepAngle
                 }
-
-                // Círculo branco/escuro no centro (efeito donut)
-                drawCircle(
-                    color = Color(0xFF1A1A24),
-                    radius = size.minDimension / 4
-                )
             }
 
             Spacer(modifier = Modifier.width(24.dp))
 
-            // Legenda
             Column {
                 totalPorCategoria.forEach { (categoria, valor) ->
                     val cor = coresCategorias[categoria] ?: Color.Gray
@@ -93,12 +82,19 @@ fun GraficoPizza(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(vertical = 2.dp)
                     ) {
-                        Canvas(modifier = Modifier.size(12.dp)) {
+                        Canvas(modifier = Modifier.size(10.dp)) {
                             drawCircle(color = cor)
                         }
                         Spacer(modifier = Modifier.width(6.dp))
+                        Icon(
+                            imageVector = categoria.icon,
+                            contentDescription = categoria.label,
+                            tint = Color(0xFFD4AF37),
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "${categoria.emoji} ${categoria.label} $percentual%",
+                            text = "${categoria.label} $percentual%",
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 11.sp
                         )
