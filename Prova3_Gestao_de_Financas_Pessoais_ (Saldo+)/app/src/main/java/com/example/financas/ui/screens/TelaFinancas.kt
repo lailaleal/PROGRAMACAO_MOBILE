@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.financas.model.Categoria
+import com.example.financas.ui.components.GraficoPizza
 import com.example.financas.viewmodel.FinancasViewModel
 import java.text.NumberFormat
 import java.util.Locale
@@ -202,6 +203,20 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
                                 color = MaterialTheme.colorScheme.tertiary,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                }
+            }
+
+            // ---------- CARD: GRÁFICO DE PIZZA ----------
+            if (viewModel.despesas.value.isNotEmpty()) {
+                item {
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            GraficoPizza(
+                                despesas = viewModel.despesas.value,
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }
