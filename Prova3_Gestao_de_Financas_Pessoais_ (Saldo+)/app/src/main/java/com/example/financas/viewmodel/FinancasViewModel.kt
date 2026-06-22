@@ -1,13 +1,24 @@
 package com.example.financas.viewmodel
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.example.financas.data.DespesaEntity
+import com.example.financas.data.FinancasDatabase
+import com.example.financas.data.OrcamentoEntity
 import com.example.financas.model.Categoria
 import com.example.financas.model.Despesa
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
-class FinancasViewModel : ViewModel() {
+class FinancasViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val dao = FinancasDatabase.getDatabase(application).despesaDao()
 
     var despesas = mutableStateOf<List<Despesa>>(emptyList())
         private set
@@ -39,6 +50,26 @@ class FinancasViewModel : ViewModel() {
     val orcamentoEmAlerta: Boolean
         get() = orcamento > 0 && percentualConsumido >= 0.8f && !orcamentoExcedido
 
+    init {
+        viewModelScope.launch {
+            dao.buscarTodas().collectLatest { entities ->
+                despesas.value = entities.map { entity ->
+                    Despesa(
+                        id = entity.id,
+                        nome = entity.nome,
+                        valor = entity.valor,
+                        categoria = Categoria.valueOf(entity.categoria)
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
+            dao.buscarOrcamento().collectLatest { entity ->
+                orcamento = entity?.valor ?: 0.0
+            }
+        }
+    }
+
     fun definirOrcamento(valorTexto: String): Boolean {
         val valor = valorTexto.replace(",", ".").toDoubleOrNull()
         erroOrcamento = when {
@@ -49,9 +80,19 @@ class FinancasViewModel : ViewModel() {
         }
         if (erroOrcamento == null && valor != null) {
             orcamento = valor
+            viewModelScope.launch {
+                dao.salvarOrcamento(OrcamentoEntity(valor = valor))
+            }
             return true
         }
         return false
+    }
+
+    fun resetarOrcamento() {
+        orcamento = 0.0
+        viewModelScope.launch {
+            dao.deletarOrcamento()
+        }
     }
 
     fun adicionarDespesa(
@@ -77,17 +118,40 @@ class FinancasViewModel : ViewModel() {
                 valor = valor,
                 categoria = categoria
             )
-            despesas.value = despesas.value + novaDespesa
+            viewModelScope.launch {
+                dao.inserir(
+                    DespesaEntity(
+                        id = novaDespesa.id,
+                        nome = novaDespesa.nome,
+                        valor = novaDespesa.valor,
+                        categoria = novaDespesa.categoria.name
+                    )
+                )
+            }
             return true
         }
         return false
     }
 
     fun removerDespesa(id: String) {
-        despesas.value = despesas.value.filterNot { it.id == id }
+        viewModelScope.launch {
+            dao.deletar(id)
+        }
     }
 
     fun limparTodas() {
-        despesas.value = emptyList()
+        viewModelScope.launch {
+            dao.deletarTodas()
+        }
+    }
+
+    class Factory(private val application: Application) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(FinancasViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return FinancasViewModel(application) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
     }
 }

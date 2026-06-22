@@ -4,9 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.financas.viewmodel.FinancasViewModel
 
 @Composable
-fun NavGraph() {
+fun NavGraph(viewModel: FinancasViewModel) {
     val navController = rememberNavController()
 
     NavHost(
@@ -21,7 +22,7 @@ fun NavGraph() {
             })
         }
         composable("dashboard") {
-            TelaFinancas()
+            TelaFinancas(viewModel = viewModel)
         }
     }
 }

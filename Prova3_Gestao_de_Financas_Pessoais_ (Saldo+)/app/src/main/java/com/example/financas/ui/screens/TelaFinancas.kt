@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.financas.model.Categoria
 import com.example.financas.ui.components.GraficoPizza
 import com.example.financas.viewmodel.FinancasViewModel
@@ -24,7 +23,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
+fun TelaFinancas(viewModel: FinancasViewModel) {
 
     var nomeDespesa by remember { mutableStateOf("") }
     var valorDespesa by remember { mutableStateOf("") }
@@ -33,11 +32,14 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
     var despesaParaDeletar by remember { mutableStateOf<String?>(null) }
     var expandirCategoria by remember { mutableStateOf(false) }
     var mostrarDialogoLimpar by remember { mutableStateOf(false) }
+    var mostrarDialogoResetarOrcamento by remember { mutableStateOf(false) }
+    var editandoOrcamento by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val formatoMoeda = remember { NumberFormat.getCurrencyInstance(Locale("pt", "BR")) }
     val goldColor = Color(0xFFD4AF37)
 
+    // Diálogo confirmar exclusão individual
     if (despesaParaDeletar != null) {
         AlertDialog(
             onDismissRequest = { despesaParaDeletar = null },
@@ -59,6 +61,7 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
         )
     }
 
+    // Diálogo confirmar limpar todas
     if (mostrarDialogoLimpar) {
         AlertDialog(
             onDismissRequest = { mostrarDialogoLimpar = false },
@@ -74,6 +77,30 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
             },
             dismissButton = {
                 TextButton(onClick = { mostrarDialogoLimpar = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    // Diálogo confirmar resetar orçamento
+    if (mostrarDialogoResetarOrcamento) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoResetarOrcamento = false },
+            title = { Text("Resetar orçamento") },
+            text = { Text("Tem certeza que deseja remover o orçamento atual?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.resetarOrcamento()
+                    mostrarDialogoResetarOrcamento = false
+                    editandoOrcamento = false
+                    valorOrcamento = ""
+                }) {
+                    Text("Resetar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogoResetarOrcamento = false }) {
                     Text("Cancelar")
                 }
             }
@@ -118,37 +145,49 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
                             color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.height(12.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            OutlinedTextField(
-                                value = valorOrcamento,
-                                onValueChange = { valorOrcamento = it },
-                                label = { Text("Valor (R$)") },
-                                isError = viewModel.erroOrcamento != null,
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Decimal
-                                ),
-                                modifier = Modifier.weight(1f)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Button(onClick = {
-                                val sucesso = viewModel.definirOrcamento(valorOrcamento)
-                                if (sucesso) valorOrcamento = ""
-                            }) { Text("Definir") }
-                        }
-                        viewModel.erroOrcamento?.let {
-                            Text(
-                                text = it,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                        if (viewModel.orcamento > 0) {
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = "Orçamento: ${formatoMoeda.format(viewModel.orcamento)}",
-                                fontWeight = FontWeight.Bold
-                            )
+
+                        if (viewModel.orcamento > 0 && !editandoOrcamento) {
+                            // Orçamento já definido — mostrar valor e botões
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = formatoMoeda.format(viewModel.orcamento),
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = "orçamento definido",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Row {
+                                    IconButton(onClick = {
+                                        editandoOrcamento = true
+                                        valorOrcamento = viewModel.orcamento.toString()
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Edit,
+                                            contentDescription = "Editar orçamento",
+                                            tint = goldColor
+                                        )
+                                    }
+                                    IconButton(onClick = {
+                                        mostrarDialogoResetarOrcamento = true
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Delete,
+                                            contentDescription = "Resetar orçamento",
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                }
+                            }
                             Spacer(modifier = Modifier.height(8.dp))
                             val progresso = viewModel.percentualConsumido.coerceIn(0f, 1f)
                             val corBarra = when {
@@ -170,6 +209,42 @@ fun TelaFinancas(viewModel: FinancasViewModel = viewModel()) {
                                 color = corBarra,
                                 trackColor = MaterialTheme.colorScheme.surfaceVariant
                             )
+                        } else {
+                            // Orçamento não definido ou editando
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                OutlinedTextField(
+                                    value = valorOrcamento,
+                                    onValueChange = { valorOrcamento = it },
+                                    label = { Text(if (editandoOrcamento) "Novo valor (R$)" else "Valor (R$)") },
+                                    isError = viewModel.erroOrcamento != null,
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Decimal
+                                    ),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Button(onClick = {
+                                    val sucesso = viewModel.definirOrcamento(valorOrcamento)
+                                    if (sucesso) {
+                                        valorOrcamento = ""
+                                        editandoOrcamento = false
+                                    }
+                                }) { Text(if (editandoOrcamento) "Salvar" else "Definir") }
+                            }
+                            if (editandoOrcamento) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                TextButton(onClick = { editandoOrcamento = false }) {
+                                    Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                            viewModel.erroOrcamento?.let {
+                                Text(
+                                    text = it,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         }
                     }
                 }
