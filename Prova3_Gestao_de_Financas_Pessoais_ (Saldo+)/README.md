@@ -20,7 +20,7 @@ O app é focado na experiência do usuário, permitindo um controle de orçament
 
 ## Funcionalidades Implementadas
 
-### 🛡 Controle de Orçamento
+### Controle de Orçamento
 *   **Definição de Teto:** Defina um orçamento mensal global que fica persistido no banco de dados.
 *   **Edição Flexível:** Altere ou resete seu orçamento a qualquer momento através de diálogos intuitivos.
 *   **Monitoramento Visual:** Barra de progresso dinâmica que muda de cor conforme o consumo.
