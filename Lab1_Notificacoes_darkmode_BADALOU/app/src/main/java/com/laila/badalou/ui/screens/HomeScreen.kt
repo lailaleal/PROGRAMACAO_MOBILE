@@ -30,7 +30,8 @@ fun HomeScreen(
     onToggleTheme: () -> Unit,
     onAddTarefa: () -> Unit,
     onEditTarefa: (Tarefa) -> Unit,
-    onCheckedTarefa: (Int, Boolean) -> Unit
+    onCheckedTarefa: (Int, Boolean) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val categorias = listOf("Todas", "Estudar", "Beber Água", "Exercício", "Medicamento", "Compromisso")
     var categoriaSelecionada by remember { mutableStateOf("Todas") }
@@ -60,6 +61,7 @@ fun HomeScreen(
     val dataFormatada = "$dia de $mes"
 
     Scaffold(
+        modifier = modifier,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddTarefa,

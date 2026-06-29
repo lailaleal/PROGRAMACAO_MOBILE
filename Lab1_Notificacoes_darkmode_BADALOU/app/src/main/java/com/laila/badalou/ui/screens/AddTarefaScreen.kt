@@ -1,7 +1,6 @@
 package com.laila.badalou.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,36 +19,30 @@ import com.laila.badalou.data.database.Tarefa
 import com.laila.badalou.ui.components.getCategoriaColor
 import com.laila.badalou.ui.components.getCategoriaIcon
 import com.laila.badalou.ui.theme.AmbarPrimary
-import com.laila.badalou.ui.theme.GreenSuccess
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTarefaScreen(
+    dataInicial: String = "",
     onSalvar: (Tarefa) -> Unit,
     onVoltar: () -> Unit
 ) {
-    // Estados dos campos
     var titulo by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
     var categoriaSelecionada by remember { mutableStateOf("Estudar") }
     var horario by remember { mutableStateOf("08:00") }
-    var data by remember { mutableStateOf("") }
-
-    // Controle do TimePicker
+    var data by remember { mutableStateOf(dataInicial) }
     var showTimePicker by remember { mutableStateOf(false) }
     var hora by remember { mutableStateOf(8) }
     var minuto by remember { mutableStateOf(0) }
 
-    // Lista de categorias
     val categorias = listOf(
         "Estudar", "Beber Água", "Exercício",
         "Medicamento", "Compromisso"
     )
 
-    // Validação
     val formValido = titulo.isNotBlank()
 
-    // TimePicker Dialog
     if (showTimePicker) {
         val timePickerState = rememberTimePickerState(
             initialHour = hora,
@@ -128,6 +120,37 @@ fun AddTarefaScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
+            // ── DATA SELECIONADA ─────────────────────
+            if (dataInicial.isNotEmpty()) {
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = AmbarPrimary.copy(alpha = 0.1f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = null,
+                            tint = AmbarPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Data: $dataInicial",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = AmbarPrimary
+                        )
+                    }
+                }
+            }
+
             // ── CAMPO TÍTULO ─────────────────────────
             Text(
                 text = "O que você vai realizar?",
@@ -170,7 +193,6 @@ fun AddTarefaScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // Grid de categorias
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 categorias.chunked(2).forEach { linha ->
                     Row(
@@ -179,7 +201,6 @@ fun AddTarefaScreen(
                     ) {
                         linha.forEach { categoria ->
                             val selecionada = categoria == categoriaSelecionada
-                            val cor = getCategoriaColor(categoria)
                             val icone = getCategoriaIcon(categoria)
 
                             Card(
@@ -222,7 +243,6 @@ fun AddTarefaScreen(
                                 }
                             }
                         }
-                        // Preenche espaço se linha tiver só 1 item
                         if (linha.size == 1) {
                             Spacer(modifier = Modifier.weight(1f))
                         }
