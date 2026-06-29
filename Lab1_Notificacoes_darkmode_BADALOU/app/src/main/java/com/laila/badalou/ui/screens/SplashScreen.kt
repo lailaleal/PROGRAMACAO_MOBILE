@@ -1,0 +1,111 @@
+package com.laila.badalou.ui.screens
+
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+
+@Composable
+fun SplashScreen(onSplashFinished: () -> Unit) {
+
+    // Controla a rotação do sino para animação de balançar
+    val rotation = remember { Animatable(0f) }
+
+    // Inicia a animação e navega após 2.5 segundos
+    LaunchedEffect(Unit) {
+
+        // Animação do sino balançando
+        repeat(3) {
+            rotation.animateTo(
+                targetValue = 20f,
+                animationSpec = tween(150, easing = EaseInOut)
+            )
+            rotation.animateTo(
+                targetValue = -20f,
+                animationSpec = tween(150, easing = EaseInOut)
+            )
+        }
+        rotation.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(100)
+        )
+
+        // Aguarda um momento e navega para a tela principal
+        delay(800)
+        onSplashFinished()
+    }
+
+    // Tela de fundo laranja
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            // Círculo branco com o sino
+            Box(
+                modifier = Modifier
+                    .size(140.dp)
+                    .background(
+                        color = Color.White,
+                        shape = androidx.compose.foundation.shape.CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                // Sino com animação de rotação
+                Text(
+                    text = "🔔",
+                    fontSize = 64.sp,
+                    modifier = Modifier.rotate(rotation.value)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Nome do app
+            Text(
+                text = "BADALOU",
+                fontSize = 42.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                letterSpacing = 4.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Slogan
+            Text(
+                text = "Badalou, sua tarefa chegou!",
+                fontSize = 16.sp,
+                color = Color.White.copy(alpha = 0.9f),
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Versão
+            Text(
+                text = "v1.0 • Energizing Productivity",
+                fontSize = 12.sp,
+                color = Color.White.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
