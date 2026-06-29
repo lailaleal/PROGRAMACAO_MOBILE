@@ -11,6 +11,9 @@
     <!-- Permite agendar alarmes exatos para as notificações -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
+    <!-- Permite usar alarmes exatos sem restrições no Android 12+ -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -33,7 +36,12 @@
             </intent-filter>
         </activity>
 
-        <!-- Permite que o WorkManager reative as tarefas após reinicialização -->
+        <!-- Receiver para receber o alarme e disparar a notificação -->
+        <receiver
+            android:name=".worker.NotificationReceiver"
+            android:exported="false" />
+
+        <!-- Receiver para reagendar alarmes após reinicialização -->
         <receiver
             android:name="androidx.work.impl.background.systemalarm.RescheduleReceiver"
             android:exported="false"

@@ -24,7 +24,7 @@ interface TarefaDao {
     // Insere uma nova tarefa no banco
     // OnConflictStrategy.REPLACE = se existir, substitui
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun inserir(tarefa: Tarefa)
+    suspend fun inserir(tarefa: Tarefa): Long
 
     // Atualiza uma tarefa existente
     @Update

@@ -24,8 +24,8 @@ class TarefaRepository(private val tarefaDao: TarefaDao) {
     }
 
     // Insere uma nova tarefa
-    suspend fun inserir(tarefa: Tarefa) {
-        tarefaDao.inserir(tarefa)
+    suspend fun inserir(tarefa: Tarefa): Long {
+        return tarefaDao.inserir(tarefa)
     }
 
     // Atualiza uma tarefa existente

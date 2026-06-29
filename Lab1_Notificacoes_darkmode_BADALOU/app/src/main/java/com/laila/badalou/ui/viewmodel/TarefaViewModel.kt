@@ -7,40 +7,29 @@ import com.laila.badalou.data.ThemePreferences
 import com.laila.badalou.data.database.BadalouDatabase
 import com.laila.badalou.data.database.Tarefa
 import com.laila.badalou.data.repository.TarefaRepository
+import com.laila.badalou.worker.AlarmScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-// AndroidViewModel = ViewModel que tem acesso ao contexto do app
 class TarefaViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Instância do repositório
     private val repository: TarefaRepository
-
-    // Instância do DataStore para o tema
     private val themePreferences: ThemePreferences
 
-    // Lista de tarefas exposta para a UI
     val tarefas: StateFlow<List<Tarefa>>
-
-    // Estado do tema — false = claro, true = escuro
     val isDarkMode: StateFlow<Boolean>
 
-    // Categoria selecionada para filtrar tarefas
     private val _categoriaSelecionada = MutableStateFlow<String?>(null)
     val categoriaSelecionada: StateFlow<String?> = _categoriaSelecionada
 
     init {
-        // Inicializa o banco de dados e repositório
         val dao = BadalouDatabase.getDatabase(application).tarefaDao()
         repository = TarefaRepository(dao)
-
-        // Inicializa o DataStore
         themePreferences = ThemePreferences(application)
 
-        // Converte o Flow de tarefas em StateFlow
         tarefas = repository.buscarTodas()
             .stateIn(
                 scope = viewModelScope,
@@ -48,7 +37,6 @@ class TarefaViewModel(application: Application) : AndroidViewModel(application) 
                 initialValue = emptyList()
             )
 
-        // Converte o Flow do tema em StateFlow
         isDarkMode = themePreferences.isDarkMode
             .stateIn(
                 scope = viewModelScope,
@@ -57,28 +45,58 @@ class TarefaViewModel(application: Application) : AndroidViewModel(application) 
             )
     }
 
-    // Insere uma nova tarefa
+    // Insere tarefa e agenda notificação exata
     fun inserirTarefa(tarefa: Tarefa) {
         viewModelScope.launch {
             repository.inserir(tarefa)
+            val lista = repository.buscarTodas()
+            lista.collect { tarefas ->
+                val tarefaInserida = tarefas.lastOrNull {
+                    it.titulo == tarefa.titulo &&
+                            it.horario == tarefa.horario
+                }
+                tarefaInserida?.let {
+                    AlarmScheduler.agendarNotificacao(
+                        context = getApplication(),
+                        tarefaId = it.id,
+                        titulo = it.titulo,
+                        horario = it.horario
+                    )
+                }
+                return@collect
+            }
         }
     }
 
-    // Atualiza uma tarefa existente
+    // Atualiza tarefa e reagenda notificação
     fun atualizarTarefa(tarefa: Tarefa) {
         viewModelScope.launch {
             repository.atualizar(tarefa)
+            AlarmScheduler.cancelarNotificacao(
+                context = getApplication(),
+                tarefaId = tarefa.id
+            )
+            AlarmScheduler.agendarNotificacao(
+                context = getApplication(),
+                tarefaId = tarefa.id,
+                titulo = tarefa.titulo,
+                horario = tarefa.horario
+            )
         }
     }
 
-    // Deleta uma tarefa
+    // Deleta tarefa e cancela notificação
     fun deletarTarefa(tarefa: Tarefa) {
         viewModelScope.launch {
             repository.deletar(tarefa)
+            AlarmScheduler.cancelarNotificacao(
+                context = getApplication(),
+                tarefaId = tarefa.id
+            )
         }
     }
 
-    // Marca tarefa como concluída ou não
+    // Marca tarefa como concluída
     fun atualizarConcluida(id: Int, concluida: Boolean) {
         viewModelScope.launch {
             repository.atualizarConcluida(id, concluida)
