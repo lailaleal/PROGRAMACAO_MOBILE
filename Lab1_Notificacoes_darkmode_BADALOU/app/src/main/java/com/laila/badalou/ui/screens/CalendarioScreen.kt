@@ -55,6 +55,7 @@ fun CalendarioScreen(
         .filter { it.data == dataSelecionada }
         .sortedBy { it.horario }
 
+    // Dias com tarefas no mês atual
     val diasComTarefas = tarefas
         .filter {
             val partes = it.data.split("/")
@@ -62,6 +63,35 @@ fun CalendarioScreen(
                 partes[1].toIntOrNull() == mesSelecionado + 1 &&
                         partes[2].toIntOrNull() == anoSelecionado
             } else false
+        }
+        .map { it.data.split("/")[0].toIntOrNull() ?: 0 }
+        .toSet()
+
+    // Dias com tarefas futuras
+    val diasComTarefasFuturas = tarefas
+        .filter {
+            val partes = it.data.split("/")
+            if (partes.size == 3) {
+                val d = partes[0].toIntOrNull() ?: 0
+                val m = partes[1].toIntOrNull() ?: 0
+                val a = partes[2].toIntOrNull() ?: 0
+                val hoje = calendar
+                when {
+                    a > hoje.get(Calendar.YEAR) -> true
+                    a == hoje.get(Calendar.YEAR) &&
+                            m > hoje.get(Calendar.MONTH) + 1 -> true
+                    a == hoje.get(Calendar.YEAR) &&
+                            m == hoje.get(Calendar.MONTH) + 1 &&
+                            d > hoje.get(Calendar.DAY_OF_MONTH) -> true
+                    else -> false
+                }
+            } else false
+        }
+        .filter {
+            val partes = it.data.split("/")
+            partes.size == 3 &&
+                    partes[1].toIntOrNull() == mesSelecionado + 1 &&
+                    partes[2].toIntOrNull() == anoSelecionado
         }
         .map { it.data.split("/")[0].toIntOrNull() ?: 0 }
         .toSet()
@@ -74,7 +104,6 @@ fun CalendarioScreen(
     val primeiroDiaSemana = calMes.get(Calendar.DAY_OF_WEEK) - 1
     val totalDias = calMes.getActualMaximum(Calendar.DAY_OF_MONTH)
 
-    // Dia selecionado é passado?
     val diaSelecionadoIsPast = run {
         val hoje = Calendar.getInstance()
         when {
@@ -165,9 +194,7 @@ fun CalendarioScreen(
                                 if (mesSelecionado == 0) {
                                     mesSelecionado = 11
                                     anoSelecionado--
-                                } else {
-                                    mesSelecionado--
-                                }
+                                } else mesSelecionado--
                             }) {
                                 Icon(
                                     Icons.Default.ChevronLeft,
@@ -187,9 +214,7 @@ fun CalendarioScreen(
                                 if (mesSelecionado == 11) {
                                     mesSelecionado = 0
                                     anoSelecionado++
-                                } else {
-                                    mesSelecionado++
-                                }
+                                } else mesSelecionado++
                             }) {
                                 Icon(
                                     Icons.Default.ChevronRight,
@@ -235,8 +260,8 @@ fun CalendarioScreen(
                                                 anoSelecionado == hoje.get(Calendar.YEAR)
                                         val isSelecionado = dia == diaSelecionado
                                         val temTarefa = dia in diasComTarefas
+                                        val temTarefaFutura = dia in diasComTarefasFuturas
 
-                                        // Verifica se a data já passou
                                         val isPast = when {
                                             anoSelecionado < hoje.get(Calendar.YEAR) -> true
                                             anoSelecionado == hoje.get(Calendar.YEAR) &&
@@ -286,10 +311,11 @@ fun CalendarioScreen(
                                                         modifier = Modifier
                                                             .size(4.dp)
                                                             .background(
-                                                                if (isSelecionado)
-                                                                    Color.White
-                                                                else
-                                                                    AmbarPrimary,
+                                                                when {
+                                                                    isSelecionado -> Color.White
+                                                                    temTarefaFutura -> Color(0xFF1565C0)
+                                                                    else -> AmbarPrimary
+                                                                },
                                                                 CircleShape
                                                             )
                                                     )
@@ -318,7 +344,6 @@ fun CalendarioScreen(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    // Botão desabilitado para datas passadas
                     Button(
                         onClick = { showAddTarefa = true },
                         enabled = !diaSelecionadoIsPast,

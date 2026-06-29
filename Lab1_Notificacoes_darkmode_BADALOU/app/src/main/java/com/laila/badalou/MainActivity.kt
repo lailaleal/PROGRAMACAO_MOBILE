@@ -22,6 +22,7 @@ import com.laila.badalou.data.database.Tarefa
 import com.laila.badalou.ui.components.BottomNavBar
 import com.laila.badalou.ui.components.BottomNavItem
 import com.laila.badalou.ui.screens.CalendarioScreen
+import com.laila.badalou.ui.screens.ConcluidasScreen
 import com.laila.badalou.ui.screens.EditTarefaScreen
 import com.laila.badalou.ui.screens.HomeScreen
 import com.laila.badalou.ui.screens.PendentesScreen
@@ -92,7 +93,24 @@ class MainActivity : ComponentActivity() {
                                             isDarkMode = isDarkMode,
                                             onToggleTheme = { viewModel.toggleDarkMode() },
                                             onAddTarefa = {
-                                                selectedRoute = BottomNavItem.NovaTarefa.route
+                                                selectedRoute = BottomNavItem.Futuras.route
+                                            },
+                                            onEditTarefa = { tarefa ->
+                                                tarefaParaEditar = tarefa
+                                            },
+                                            onCheckedTarefa = { id, concluida ->
+                                                viewModel.atualizarConcluida(id, concluida)
+                                            },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    }
+                                    BottomNavItem.Futuras.route -> {
+                                        CalendarioScreen(
+                                            tarefas = tarefas,
+                                            isDarkMode = isDarkMode,
+                                            onToggleTheme = { viewModel.toggleDarkMode() },
+                                            onSalvarTarefa = { tarefa ->
+                                                viewModel.inserirTarefa(tarefa)
                                             },
                                             onEditTarefa = { tarefa ->
                                                 tarefaParaEditar = tarefa
@@ -117,14 +135,11 @@ class MainActivity : ComponentActivity() {
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     }
-                                    BottomNavItem.NovaTarefa.route -> {
-                                        CalendarioScreen(
+                                    BottomNavItem.Concluidas.route -> {
+                                        ConcluidasScreen(
                                             tarefas = tarefas,
                                             isDarkMode = isDarkMode,
                                             onToggleTheme = { viewModel.toggleDarkMode() },
-                                            onSalvarTarefa = { tarefa ->
-                                                viewModel.inserirTarefa(tarefa)
-                                            },
                                             onEditTarefa = { tarefa ->
                                                 tarefaParaEditar = tarefa
                                             },

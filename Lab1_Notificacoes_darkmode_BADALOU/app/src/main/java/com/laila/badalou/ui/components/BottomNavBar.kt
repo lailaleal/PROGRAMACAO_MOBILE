@@ -1,7 +1,8 @@
 package com.laila.badalou.ui.components
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -14,8 +15,9 @@ sealed class BottomNavItem(
     val title: String
 ) {
     object Hoje : BottomNavItem("hoje", "Hoje")
+    object Futuras : BottomNavItem("futuras", "Futuras")
     object Pendentes : BottomNavItem("pendentes", "Pendentes")
-    object NovaTarefa : BottomNavItem("nova_tarefa", "Adicionar")
+    object Concluidas : BottomNavItem("concluidas", "Concluídas")
 }
 
 @Composable
@@ -24,8 +26,7 @@ fun BottomNavBar(
     onItemSelected: (String) -> Unit
 ) {
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 8.dp
+        containerColor = MaterialTheme.colorScheme.surface
     ) {
         NavigationBarItem(
             selected = selectedRoute == BottomNavItem.Hoje.route,
@@ -37,6 +38,23 @@ fun BottomNavBar(
                 )
             },
             label = { Text("Hoje") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = AmbarPrimary,
+                selectedTextColor = AmbarPrimary,
+                indicatorColor = AmbarPrimary.copy(alpha = 0.1f)
+            )
+        )
+
+        NavigationBarItem(
+            selected = selectedRoute == BottomNavItem.Futuras.route,
+            onClick = { onItemSelected(BottomNavItem.Futuras.route) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.DateRange,
+                    contentDescription = "Futuras"
+                )
+            },
+            label = { Text("Futuras") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = AmbarPrimary,
                 selectedTextColor = AmbarPrimary,
@@ -62,15 +80,15 @@ fun BottomNavBar(
         )
 
         NavigationBarItem(
-            selected = selectedRoute == BottomNavItem.NovaTarefa.route,
-            onClick = { onItemSelected(BottomNavItem.NovaTarefa.route) },
+            selected = selectedRoute == BottomNavItem.Concluidas.route,
+            onClick = { onItemSelected(BottomNavItem.Concluidas.route) },
             icon = {
                 Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Nova Tarefa"
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Concluídas"
                 )
             },
-            label = { Text("Adicionar") },
+            label = { Text("Feitas") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = AmbarPrimary,
                 selectedTextColor = AmbarPrimary,

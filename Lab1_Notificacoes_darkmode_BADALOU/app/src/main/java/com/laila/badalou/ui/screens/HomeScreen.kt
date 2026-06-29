@@ -36,16 +36,28 @@ fun HomeScreen(
     val categorias = listOf("Todas", "Estudar", "Beber Água", "Exercício", "Medicamento", "Compromisso")
     var categoriaSelecionada by remember { mutableStateOf("Todas") }
 
+    // Data de hoje formatada
+    val calendar = java.util.Calendar.getInstance()
+    val diaHoje = calendar.get(java.util.Calendar.DAY_OF_MONTH)
+    val mesHoje = calendar.get(java.util.Calendar.MONTH) + 1
+    val anoHoje = calendar.get(java.util.Calendar.YEAR)
+    val dataHoje = "%02d/%02d/%04d".format(diaHoje, mesHoje, anoHoje)
+
+    // Filtra apenas tarefas de hoje
+    val tarefasDeHoje = tarefas.filter {
+        it.data == dataHoje || it.data.isEmpty()
+    }.sortedBy { it.horario }
+
+    // Filtra por categoria
     val tarefasFiltradas = if (categoriaSelecionada == "Todas") {
-        tarefas
+        tarefasDeHoje
     } else {
-        tarefas.filter { it.categoria == categoriaSelecionada }
+        tarefasDeHoje.filter { it.categoria == categoriaSelecionada }
     }
 
-    val concluidas = tarefas.count { it.concluida }
-    val total = tarefas.size
+    val concluidas = tarefasDeHoje.count { it.concluida }
+    val total = tarefasDeHoje.size
 
-    val calendar = java.util.Calendar.getInstance()
     val diasSemana = arrayOf(
         "Domingo", "Segunda", "Terça",
         "Quarta", "Quinta", "Sexta", "Sábado"
@@ -56,9 +68,8 @@ fun HomeScreen(
         "Setembro", "Outubro", "Novembro", "Dezembro"
     )
     val diaSemana = diasSemana[calendar.get(java.util.Calendar.DAY_OF_WEEK) - 1]
-    val dia = calendar.get(java.util.Calendar.DAY_OF_MONTH)
     val mes = meses[calendar.get(java.util.Calendar.MONTH)]
-    val dataFormatada = "$dia de $mes"
+    val dataFormatada = "$diaHoje de $mes"
 
     Scaffold(
         modifier = modifier,
@@ -82,7 +93,6 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-
             // ── HEADER ──────────────────────────────
             Box(
                 modifier = Modifier
@@ -102,7 +112,6 @@ fun HomeScreen(
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
-
                         IconButton(onClick = onToggleTheme) {
                             Icon(
                                 imageVector = if (isDarkMode)
@@ -161,10 +170,7 @@ fun HomeScreen(
                                 modifier = Modifier.padding(12.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(
-                                    text = "🔥",
-                                    fontSize = 20.sp
-                                )
+                                Text(text = "🔥", fontSize = 20.sp)
                                 Text(
                                     text = "Foco!",
                                     fontSize = 11.sp,
@@ -214,7 +220,7 @@ fun HomeScreen(
                         Text(text = "🔔", fontSize = 48.sp)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Nenhuma tarefa ainda!",
+                            text = "Nenhuma tarefa para hoje!",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
