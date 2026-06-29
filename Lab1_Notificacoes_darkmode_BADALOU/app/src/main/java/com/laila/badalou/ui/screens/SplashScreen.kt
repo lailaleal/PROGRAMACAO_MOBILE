@@ -19,13 +19,9 @@ import kotlinx.coroutines.delay
 @Composable
 fun SplashScreen(onSplashFinished: () -> Unit) {
 
-    // Controla a rotação do sino para animação de balançar
     val rotation = remember { Animatable(0f) }
 
-    // Inicia a animação e navega após 2.5 segundos
     LaunchedEffect(Unit) {
-
-        // Animação do sino balançando
         repeat(3) {
             rotation.animateTo(
                 targetValue = 20f,
@@ -40,13 +36,10 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
             targetValue = 0f,
             animationSpec = tween(100)
         )
-
-        // Aguarda um momento e navega para a tela principal
         delay(800)
         onSplashFinished()
     }
 
-    // Tela de fundo laranja
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -57,8 +50,6 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-
-            // Círculo branco com o sino
             Box(
                 modifier = Modifier
                     .size(140.dp)
@@ -68,7 +59,6 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                // Sino com animação de rotação
                 Text(
                     text = "🔔",
                     fontSize = 64.sp,
@@ -78,7 +68,6 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Nome do app
             Text(
                 text = "BADALOU",
                 fontSize = 42.sp,
@@ -89,22 +78,12 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Slogan
             Text(
                 text = "Badalou, sua tarefa chegou!",
                 fontSize = 16.sp,
                 color = Color.White.copy(alpha = 0.9f),
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Medium
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Versão
-            Text(
-                text = "v1.0 • Energizing Productivity",
-                fontSize = 12.sp,
-                color = Color.White.copy(alpha = 0.6f)
             )
         }
     }
