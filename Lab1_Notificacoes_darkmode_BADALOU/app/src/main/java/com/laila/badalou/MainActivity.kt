@@ -106,6 +106,8 @@ class MainActivity : ComponentActivity() {
                                     BottomNavItem.Pendentes.route -> {
                                         PendentesScreen(
                                             tarefas = tarefas,
+                                            isDarkMode = isDarkMode,
+                                            onToggleTheme = { viewModel.toggleDarkMode() },
                                             onEditTarefa = { tarefa ->
                                                 tarefaParaEditar = tarefa
                                             },
@@ -118,6 +120,8 @@ class MainActivity : ComponentActivity() {
                                     BottomNavItem.NovaTarefa.route -> {
                                         CalendarioScreen(
                                             tarefas = tarefas,
+                                            isDarkMode = isDarkMode,
+                                            onToggleTheme = { viewModel.toggleDarkMode() },
                                             onSalvarTarefa = { tarefa ->
                                                 viewModel.inserirTarefa(tarefa)
                                             },

@@ -28,6 +28,8 @@ import java.util.Calendar
 @Composable
 fun CalendarioScreen(
     tarefas: List<Tarefa>,
+    isDarkMode: Boolean,
+    onToggleTheme: () -> Unit,
     onSalvarTarefa: (Tarefa) -> Unit,
     onEditTarefa: (Tarefa) -> Unit,
     onCheckedTarefa: (Int, Boolean) -> Unit,
@@ -72,6 +74,20 @@ fun CalendarioScreen(
     val primeiroDiaSemana = calMes.get(Calendar.DAY_OF_WEEK) - 1
     val totalDias = calMes.getActualMaximum(Calendar.DAY_OF_MONTH)
 
+    // Dia selecionado é passado?
+    val diaSelecionadoIsPast = run {
+        val hoje = Calendar.getInstance()
+        when {
+            anoSelecionado < hoje.get(Calendar.YEAR) -> true
+            anoSelecionado == hoje.get(Calendar.YEAR) &&
+                    mesSelecionado < hoje.get(Calendar.MONTH) -> true
+            anoSelecionado == hoje.get(Calendar.YEAR) &&
+                    mesSelecionado == hoje.get(Calendar.MONTH) &&
+                    diaSelecionado < hoje.get(Calendar.DAY_OF_MONTH) -> true
+            else -> false
+        }
+    }
+
     if (showAddTarefa) {
         AddTarefaScreen(
             dataInicial = dataSelecionada,
@@ -94,12 +110,28 @@ fun CalendarioScreen(
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
             Column {
-                Text(
-                    text = "🔔 BADALOU",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "🔔 BADALOU",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    IconButton(onClick = onToggleTheme) {
+                        Icon(
+                            imageVector = if (isDarkMode)
+                                Icons.Default.LightMode
+                            else
+                                Icons.Default.DarkMode,
+                            contentDescription = "Alternar tema",
+                            tint = Color.White
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Calendário",
@@ -124,7 +156,6 @@ fun CalendarioScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
 
-                        // Navegação do mês
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -170,7 +201,6 @@ fun CalendarioScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Dias da semana
                         val diasSemana = listOf("D", "S", "T", "Q", "Q", "S", "S")
                         Row(modifier = Modifier.fillMaxWidth()) {
                             diasSemana.forEach { dia ->
@@ -187,7 +217,6 @@ fun CalendarioScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Grid de dias
                         val totalCelulas = primeiroDiaSemana + totalDias
                         val linhas = (totalCelulas + 6) / 7
 
@@ -200,11 +229,23 @@ fun CalendarioScreen(
                                     if (dia < 1 || dia > totalDias) {
                                         Box(modifier = Modifier.weight(1f))
                                     } else {
-                                        val isHoje = dia == calendar.get(Calendar.DAY_OF_MONTH) &&
-                                                mesSelecionado == calendar.get(Calendar.MONTH) &&
-                                                anoSelecionado == calendar.get(Calendar.YEAR)
+                                        val hoje = calendar
+                                        val isHoje = dia == hoje.get(Calendar.DAY_OF_MONTH) &&
+                                                mesSelecionado == hoje.get(Calendar.MONTH) &&
+                                                anoSelecionado == hoje.get(Calendar.YEAR)
                                         val isSelecionado = dia == diaSelecionado
                                         val temTarefa = dia in diasComTarefas
+
+                                        // Verifica se a data já passou
+                                        val isPast = when {
+                                            anoSelecionado < hoje.get(Calendar.YEAR) -> true
+                                            anoSelecionado == hoje.get(Calendar.YEAR) &&
+                                                    mesSelecionado < hoje.get(Calendar.MONTH) -> true
+                                            anoSelecionado == hoje.get(Calendar.YEAR) &&
+                                                    mesSelecionado == hoje.get(Calendar.MONTH) &&
+                                                    dia < hoje.get(Calendar.DAY_OF_MONTH) -> true
+                                            else -> false
+                                        }
 
                                         Box(
                                             modifier = Modifier
@@ -213,12 +254,14 @@ fun CalendarioScreen(
                                                 .clip(CircleShape)
                                                 .background(
                                                     when {
-                                                        isSelecionado -> AmbarPrimary
+                                                        isSelecionado && !isPast -> AmbarPrimary
                                                         isHoje -> AmbarPrimary.copy(alpha = 0.2f)
                                                         else -> Color.Transparent
                                                     }
                                                 )
-                                                .clickable { diaSelecionado = dia },
+                                                .clickable(enabled = !isPast) {
+                                                    diaSelecionado = dia
+                                                },
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Column(
@@ -230,6 +273,8 @@ fun CalendarioScreen(
                                                     fontWeight = if (isHoje || isSelecionado)
                                                         FontWeight.Bold else FontWeight.Normal,
                                                     color = when {
+                                                        isPast -> MaterialTheme.colorScheme
+                                                            .onSurface.copy(alpha = 0.3f)
                                                         isSelecionado -> Color.White
                                                         isHoje -> AmbarPrimary
                                                         else -> MaterialTheme.colorScheme.onSurface
@@ -273,10 +318,13 @@ fun CalendarioScreen(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                    // Botão desabilitado para datas passadas
                     Button(
                         onClick = { showAddTarefa = true },
+                        enabled = !diaSelecionadoIsPast,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = AmbarPrimary
+                            containerColor = AmbarPrimary,
+                            disabledContainerColor = AmbarPrimary.copy(alpha = 0.3f)
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -305,9 +353,13 @@ fun CalendarioScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Nenhuma tarefa neste dia",
+                            text = if (diaSelecionadoIsPast)
+                                "Data passada — não é possível adicionar tarefas"
+                            else
+                                "Nenhuma tarefa neste dia",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 14.sp
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center
                         )
                     }
                 }

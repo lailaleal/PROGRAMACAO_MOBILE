@@ -4,7 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +22,8 @@ import com.laila.badalou.ui.theme.AmbarPrimary
 @Composable
 fun PendentesScreen(
     tarefas: List<Tarefa>,
+    isDarkMode: Boolean,
+    onToggleTheme: () -> Unit,
     onEditTarefa: (Tarefa) -> Unit,
     onCheckedTarefa: (Int, Boolean) -> Unit,
     modifier: Modifier = Modifier
@@ -37,12 +41,28 @@ fun PendentesScreen(
                 .padding(horizontal = 20.dp, vertical = 20.dp)
         ) {
             Column {
-                Text(
-                    text = "🔔 BADALOU",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "🔔 BADALOU",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    IconButton(onClick = onToggleTheme) {
+                        Icon(
+                            imageVector = if (isDarkMode)
+                                Icons.Default.LightMode
+                            else
+                                Icons.Default.DarkMode,
+                            contentDescription = "Alternar tema",
+                            tint = Color.White
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Tarefas Pendentes",
